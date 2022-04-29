@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:skribbl_clone/model/my_custom_painter.dart';
@@ -24,11 +26,25 @@ class _PaintScreenState extends State<PaintScreen> {
   Color selectedColor = Colors.black;
   double opacity = 1;
   double strokeWidth = 2;
+  List<Widget> textBlankWidget = [];
+  ScrollController _scrollController = ScrollController();
+  List<Map> messages = [];
+  TextEditingController _txtController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     connect();
+  }
+
+  void renderTextBlank(String text) {
+    textBlankWidget.clear();
+    for (var i = 0; i < text.length; i++) {
+      textBlankWidget.add(Text(
+        '_',
+        style: TextStyle(fontSize: 30),
+      ));
+    }
   }
 
   //socket io client connection
@@ -51,8 +67,9 @@ class _PaintScreenState extends State<PaintScreen> {
     socket.onConnect((data) {
       print("connected");
       socket.on('updateRoom', (roomData) {
-        print('roomData: ${roomData['word']}');
+        //print('roomData: ${roomData['word']}');
         setState(() {
+          renderTextBlank(roomData['word']);
           dataOfRoom = roomData;
         });
         if (roomData['isJoin'] != true) {
@@ -73,6 +90,16 @@ class _PaintScreenState extends State<PaintScreen> {
                   ..strokeWidth = strokeWidth));
           });
         }
+      });
+
+      socket.on('msg', (msgData) {
+        setState(() {
+          messages.add(msgData);
+        });
+        _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent + 40,
+            duration: Duration(milliseconds: 200),
+            curve: Curves.easeInOut);
       });
 
       socket.on('color-change', (colorString) {
@@ -220,8 +247,104 @@ class _PaintScreenState extends State<PaintScreen> {
                         color: selectedColor,
                       )),
                 ],
-              )
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: textBlankWidget,
+              ),
+              //Displaying messages
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 15, vertical: 2),
+                height: MediaQuery.of(context).size.height * 0.25,
+                child: ListView.builder(
+                    controller: _scrollController,
+                    shrinkWrap: true,
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      var msg = messages[index].values;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 5),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(
+                              msg.elementAt(0) + ": ",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 19,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              msg.elementAt(1),
+                              style: TextStyle(
+                                color: Colors.black54,
+                                fontSize: 19,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                      // return ListTile(
+                      //   title: Text(
+                      //     msg.elementAt(0),
+                      //     style: TextStyle(
+                      //       color: Colors.black,
+                      //       fontSize: 19,
+                      //       fontWeight: FontWeight.bold,
+                      //     ),
+                      //   ),
+                      //   subtitle: Text(
+                      //     msg.elementAt(1),
+                      //     style: TextStyle(
+                      //       color: Colors.grey,
+                      //       fontSize: 16,
+                      //     ),
+                      //   ),
+                      // );
+                    }),
+              ),
             ],
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+              child: TextField(
+                controller: _txtController,
+                onSubmitted: (value) {
+                  if (value.trim().isNotEmpty) {
+                    Map map = {
+                      'username': widget.data['nickname'],
+                      'msg': value.trim(),
+                      'word': dataOfRoom['word'],
+                      'roomName': widget.data['name'],
+                    };
+                    socket.emit('msg', map);
+                    _txtController.clear();
+                  }
+                },
+                autocorrect: false,
+                decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.transparent)),
+                    enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.transparent)),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    filled: true,
+                    fillColor: Color(0xFFF5F5FA),
+                    hintText: 'Your guess',
+                    hintStyle: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                    )),
+                textInputAction: TextInputAction.done,
+              ),
+            ),
           )
         ],
       ),
