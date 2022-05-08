@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -30,11 +31,31 @@ class _PaintScreenState extends State<PaintScreen> {
   ScrollController _scrollController = ScrollController();
   List<Map> messages = [];
   TextEditingController _txtController = TextEditingController();
+  int guessedUserCtr = 0;
+  int _totalTime = 60;
+  int _start = 60;
+  late Timer _timer;
 
   @override
   void initState() {
     super.initState();
     connect();
+  }
+
+  void startTimer() {
+    const oneSec = Duration(seconds: 1);
+    _timer = Timer.periodic(oneSec, (timer) {
+      if (_start == 0) {
+        socket.emit('change-turn', dataOfRoom['name']);
+        setState(() {
+          timer.cancel();
+        });
+      } else {
+        setState(() {
+          _start--;
+        });
+      }
+    });
   }
 
   void renderTextBlank(String text) {
@@ -73,7 +94,7 @@ class _PaintScreenState extends State<PaintScreen> {
           dataOfRoom = roomData;
         });
         if (roomData['isJoin'] != true) {
-          //start the timer
+          startTimer();
         }
       });
 
@@ -95,11 +116,38 @@ class _PaintScreenState extends State<PaintScreen> {
       socket.on('msg', (msgData) {
         setState(() {
           messages.add(msgData);
+          guessedUserCtr = msgData['guessedUserCtr'];
         });
+        if (guessedUserCtr == dataOfRoom['players'].length - 1) {
+          socket.emit('change-turn', dataOfRoom['name']);
+        }
         _scrollController.animateTo(
             _scrollController.position.maxScrollExtent + 40,
             duration: Duration(milliseconds: 200),
             curve: Curves.easeInOut);
+      });
+
+      socket.on('change-turn', (data) {
+        String oldWord = dataOfRoom['word'];
+        showDialog(
+            context: context,
+            builder: (context) {
+              Future.delayed(Duration(seconds: 3), () {
+                setState(() {
+                  dataOfRoom = data;
+                  renderTextBlank(data['word']);
+                  guessedUserCtr = 0;
+                  _start = 60;
+                  points.clear();
+                });
+                Navigator.of(context).pop();
+                _timer.cancel();
+                startTimer();
+              });
+              return AlertDialog(
+                title: Center(child: Text('Word was $oldWord')),
+              );
+            });
       });
 
       socket.on('color-change', (colorString) {
@@ -168,6 +216,18 @@ class _PaintScreenState extends State<PaintScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      floatingActionButton: Container(
+        margin: EdgeInsets.only(bottom: 30),
+        child: FloatingActionButton(
+          onPressed: () {},
+          elevation: 7,
+          backgroundColor: Colors.white,
+          child: Text(
+            '$_start',
+            style: TextStyle(color: Colors.black, fontSize: 22),
+          ),
+        ),
+      ),
       body: Stack(
         children: [
           Column(
@@ -248,10 +308,17 @@ class _PaintScreenState extends State<PaintScreen> {
                       )),
                 ],
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: textBlankWidget,
-              ),
+              dataOfRoom['turn']['nickname'] != widget.data['nickname']
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: textBlankWidget,
+                    )
+                  : Center(
+                      child: Text(
+                        dataOfRoom['word'],
+                        style: TextStyle(fontSize: 26),
+                      ),
+                    ),
               //Displaying messages
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 15, vertical: 2),
@@ -307,45 +374,52 @@ class _PaintScreenState extends State<PaintScreen> {
               ),
             ],
           ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              margin: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-              child: TextField(
-                controller: _txtController,
-                onSubmitted: (value) {
-                  if (value.trim().isNotEmpty) {
-                    Map map = {
-                      'username': widget.data['nickname'],
-                      'msg': value.trim(),
-                      'word': dataOfRoom['word'],
-                      'roomName': widget.data['name'],
-                    };
-                    socket.emit('msg', map);
-                    _txtController.clear();
-                  }
-                },
-                autocorrect: false,
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.transparent)),
-                    enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.transparent)),
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    filled: true,
-                    fillColor: Color(0xFFF5F5FA),
-                    hintText: 'Your guess',
-                    hintStyle: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                    )),
-                textInputAction: TextInputAction.done,
-              ),
-            ),
-          )
+          dataOfRoom['turn']['nickname'] != widget.data['nickname']
+              ? Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    margin: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                    child: TextField(
+                      controller: _txtController,
+                      onSubmitted: (value) {
+                        if (value.trim().isNotEmpty) {
+                          Map map = {
+                            'username': widget.data['nickname'],
+                            'msg': value.trim(),
+                            'word': dataOfRoom['word'],
+                            'roomName': widget.data['name'],
+                            'guessedUserCtr': guessedUserCtr,
+                            'totalTime': _totalTime,
+                            'timeTaken': _totalTime - _start,
+                          };
+                          socket.emit('msg', map);
+                          _txtController.clear();
+                        }
+                      },
+                      autocorrect: false,
+                      decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide:
+                                  BorderSide(color: Colors.transparent)),
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide:
+                                  BorderSide(color: Colors.transparent)),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 14),
+                          filled: true,
+                          fillColor: Color(0xFFF5F5FA),
+                          hintText: 'Your guess',
+                          hintStyle: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                          )),
+                      textInputAction: TextInputAction.done,
+                    ),
+                  ),
+                )
+              : Container()
         ],
       ),
     );

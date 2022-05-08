@@ -12,8 +12,8 @@ class CreateRoomScreen extends StatefulWidget {
 class _CreateRoomScreenState extends State<CreateRoomScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _roomNameController = TextEditingController();
-  late String? _maxRoundValue = "0";
-  late String? _roomSizeValue = "0";
+  late String? _maxRoundValue = "2";
+  late String? _roomSizeValue = "2";
 
   createRoom() {
     if (_nameController.text.isNotEmpty &&
