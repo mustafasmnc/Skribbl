@@ -6,8 +6,9 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:skribbl_clone/model/my_custom_painter.dart';
 import 'package:skribbl_clone/model/touch_points.dart';
 import 'package:skribbl_clone/screens/waiting_lobby_screen.dart';
+import 'package:skribbl_clone/sidebar/player_scoreboard_drawer.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
-import 'package:socket_io_client/socket_io_client.dart';
+//import 'package:socket_io_client/socket_io_client.dart';
 
 class PaintScreen extends StatefulWidget {
   final Map<String, String> data;
@@ -36,6 +37,9 @@ class _PaintScreenState extends State<PaintScreen> {
   int _totalTime = 60;
   int _start = 60;
   late Timer _timer;
+  var scaffoldKey = GlobalKey<ScaffoldState>();
+  List<Map> scoreBoard = [];
+  bool isTextInputReadOnly = false;
 
   @override
   void initState() {
@@ -94,8 +98,20 @@ class _PaintScreenState extends State<PaintScreen> {
           renderTextBlank(roomData['word']);
           dataOfRoom = roomData;
         });
-        if (roomData['isJoin'] != true) {
+        // if (roomData['isJoin'] != true) {
+        //   startTimer();
+        // }
+        if (dataOfRoom['players'].length > 1) {
           startTimer();
+        }
+        scoreBoard.clear();
+        for (var i = 0; i < roomData['players'].length; i++) {
+          setState(() {
+            scoreBoard.add({
+              'username': roomData['players'][i]['nickname'],
+              'points': roomData['players'][i]['points'].toString()
+            });
+          });
         }
       });
 
@@ -137,6 +153,7 @@ class _PaintScreenState extends State<PaintScreen> {
                 setState(() {
                   dataOfRoom = data;
                   renderTextBlank(data['word']);
+                  isTextInputReadOnly = false;
                   guessedUserCtr = 0;
                   _start = 60;
                   points.clear();
@@ -149,6 +166,18 @@ class _PaintScreenState extends State<PaintScreen> {
                 title: Center(child: Text('Word was $oldWord')),
               );
             });
+      });
+
+      socket.on('update-score', (roomData) {
+        scoreBoard.clear();
+        for (var i = 0; i < roomData['players'].length; i++) {
+          setState(() {
+            scoreBoard.add({
+              'username': roomData['players'][i]['nickname'],
+              'points': roomData['players'][i]['points'].toString()
+            });
+          });
+        }
       });
 
       socket.on('color-change', (colorString) {
@@ -173,14 +202,19 @@ class _PaintScreenState extends State<PaintScreen> {
         });
       });
 
+      socket.on('close-input', (data) {
+        socket.emit('update-score', widget.data['name']);
+        setState(() {
+          isTextInputReadOnly = true;
+        });
+      });
+
       //print("connection: ${socket.connected}");
       //socket.emit('message', 'test');
       //setState(() {});
     });
 
-    socket.onDisconnect((data){
-      
-    });
+    socket.onDisconnect((data) {});
   }
 
   void selectColor() {
@@ -220,7 +254,9 @@ class _PaintScreenState extends State<PaintScreen> {
     final height = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      key: scaffoldKey,
       backgroundColor: Colors.white,
+      drawer: PlayerScore(scoreBoard),
       floatingActionButton: Container(
         margin: EdgeInsets.only(bottom: 30),
         child: FloatingActionButton(
@@ -234,7 +270,8 @@ class _PaintScreenState extends State<PaintScreen> {
         ),
       ),
       body: dataOfRoom != null
-          ? dataOfRoom['isJoin'] != true
+          //? dataOfRoom['isJoin'] != true
+          ? dataOfRoom['players'].length > 1
               ? Stack(
                   children: [
                     Column(
@@ -397,6 +434,7 @@ class _PaintScreenState extends State<PaintScreen> {
                               margin: EdgeInsets.symmetric(
                                   horizontal: 20, vertical: 5),
                               child: TextField(
+                                readOnly: isTextInputReadOnly,
                                 controller: _txtController,
                                 onSubmitted: (value) {
                                   if (value.trim().isNotEmpty) {
@@ -436,7 +474,16 @@ class _PaintScreenState extends State<PaintScreen> {
                               ),
                             ),
                           )
-                        : Container()
+                        : Container(),
+                    SafeArea(
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.menu,
+                          color: Colors.black,
+                        ),
+                        onPressed: () => scaffoldKey.currentState!.openDrawer(),
+                      ),
+                    )
                   ],
                 )
               : WaitingLobbyScreen(

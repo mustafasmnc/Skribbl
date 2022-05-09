@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:skribbl_clone/screens/paint_screen.dart';
 import 'package:skribbl_clone/widgets/custom_text_field.dart';
+import 'package:http/http.dart' as http;
 
 class CreateRoomScreen extends StatefulWidget {
   const CreateRoomScreen({Key? key}) : super(key: key);
@@ -15,7 +18,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
   late String? _maxRoundValue = "2";
   late String? _roomSizeValue = "2";
 
-  createRoom() {
+  createRoom() async {
     if (_nameController.text.isNotEmpty &&
         _roomNameController.text.isNotEmpty &&
         _maxRoundValue != null &&
@@ -26,9 +29,34 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
         "occupancy": _roomSizeValue!,
         "maxRounds": _maxRoundValue!
       };
-      Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) =>
-              PaintScreen(data: data, screenFrom: 'createRoom')));
+      // if (checkRoomExist() == true) {
+      //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      //       content: Text(
+      //           'Room with ${_roomNameController.text} is already exist')));
+      // } else {
+      //   print(checkRoomExist());
+      //   // Navigator.of(context).push(MaterialPageRoute(
+      //   //     builder: (context) =>
+      //   //         PaintScreen(data: data, screenFrom: 'createRoom')));
+      // }
+
+      await http
+          .post(Uri.parse('serverlink/api/room/check'),
+              headers: {"Content-Type": "application/json"},
+              body: jsonEncode(<String, String>{
+                'roomName': _roomNameController.text.toString()
+              }))
+          .then((response) {
+        if (response.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(
+                  '${_roomNameController.text} is already exist')));
+        } else {
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) =>
+                  PaintScreen(data: data, screenFrom: 'createRoom')));
+        }
+      });
     }
   }
 
