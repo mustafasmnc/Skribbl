@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:skribbl_clone/model/my_custom_painter.dart';
 import 'package:skribbl_clone/model/touch_points.dart';
+import 'package:skribbl_clone/screens/waiting_lobby_screen.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:socket_io_client/socket_io_client.dart';
 
@@ -176,6 +177,10 @@ class _PaintScreenState extends State<PaintScreen> {
       //socket.emit('message', 'test');
       //setState(() {});
     });
+
+    socket.onDisconnect((data){
+      
+    });
   }
 
   void selectColor() {
@@ -228,200 +233,219 @@ class _PaintScreenState extends State<PaintScreen> {
           ),
         ),
       ),
-      body: Stack(
-        children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: width,
-                height: height * 0.55,
-                child: GestureDetector(
-                  onPanUpdate: (details) {
-                    //print(details.localPosition.dx);
-                    socket.emit('paint', {
-                      'details': {
-                        'dx': details.localPosition.dx,
-                        'dy': details.localPosition.dy
-                      },
-                      'roomName': widget.data['name']
-                    });
-                  },
-                  onPanStart: (details) {
-                    //print(details.localPosition.dx);
-                    socket.emit('paint', {
-                      'details': {
-                        'dx': details.localPosition.dx,
-                        'dy': details.localPosition.dy
-                      },
-                      'roomName': widget.data['name']
-                    });
-                  },
-                  onPanEnd: (details) {
-                    socket.emit('paint',
-                        {'details': null, 'roomName': widget.data['name']});
-                  },
-                  child: SizedBox.expand(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.all(Radius.circular(20)),
-                      child: RepaintBoundary(
-                        child: CustomPaint(
-                            size: Size.infinite,
-                            painter: MyCustomPainter(pointsList: points)),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Row(
-                children: [
-                  IconButton(
-                      onPressed: () {
-                        selectColor();
-                      },
-                      icon: Icon(
-                        Icons.color_lens,
-                        color: selectedColor,
-                      )),
-                  Expanded(
-                      child: Slider(
-                          min: 1.0,
-                          max: 10.0,
-                          label: "Strokewidth",
-                          activeColor: selectedColor,
-                          value: strokeWidth,
-                          onChanged: (double value) {
-                            Map map = {
-                              'value': value,
-                              'roomName': dataOfRoom['name']
-                            };
-                            socket.emit('stroke-width', map);
-                          })),
-                  IconButton(
-                      onPressed: () {
-                        socket.emit('clean-screen', dataOfRoom['name']);
-                      },
-                      icon: Icon(
-                        Icons.layers_clear,
-                        color: selectedColor,
-                      )),
-                ],
-              ),
-              dataOfRoom['turn']['nickname'] != widget.data['nickname']
-                  ? Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: textBlankWidget,
-                    )
-                  : Center(
-                      child: Text(
-                        dataOfRoom['word'],
-                        style: TextStyle(fontSize: 26),
-                      ),
-                    ),
-              //Displaying messages
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 15, vertical: 2),
-                height: MediaQuery.of(context).size.height * 0.25,
-                child: ListView.builder(
-                    controller: _scrollController,
-                    shrinkWrap: true,
-                    itemCount: messages.length,
-                    itemBuilder: (context, index) {
-                      var msg = messages[index].values;
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 5),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.start,
+      body: dataOfRoom != null
+          ? dataOfRoom['isJoin'] != true
+              ? Stack(
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: width,
+                          height: height * 0.55,
+                          child: GestureDetector(
+                            onPanUpdate: (details) {
+                              //print(details.localPosition.dx);
+                              socket.emit('paint', {
+                                'details': {
+                                  'dx': details.localPosition.dx,
+                                  'dy': details.localPosition.dy
+                                },
+                                'roomName': widget.data['name']
+                              });
+                            },
+                            onPanStart: (details) {
+                              //print(details.localPosition.dx);
+                              socket.emit('paint', {
+                                'details': {
+                                  'dx': details.localPosition.dx,
+                                  'dy': details.localPosition.dy
+                                },
+                                'roomName': widget.data['name']
+                              });
+                            },
+                            onPanEnd: (details) {
+                              socket.emit('paint', {
+                                'details': null,
+                                'roomName': widget.data['name']
+                              });
+                            },
+                            child: SizedBox.expand(
+                              child: ClipRRect(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(20)),
+                                child: RepaintBoundary(
+                                  child: CustomPaint(
+                                      size: Size.infinite,
+                                      painter:
+                                          MyCustomPainter(pointsList: points)),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Row(
                           children: [
-                            Text(
-                              msg.elementAt(0) + ": ",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 19,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              msg.elementAt(1),
-                              style: TextStyle(
-                                color: Colors.black54,
-                                fontSize: 19,
-                              ),
-                            ),
+                            IconButton(
+                                onPressed: () {
+                                  selectColor();
+                                },
+                                icon: Icon(
+                                  Icons.color_lens,
+                                  color: selectedColor,
+                                )),
+                            Expanded(
+                                child: Slider(
+                                    min: 1.0,
+                                    max: 10.0,
+                                    label: "Strokewidth",
+                                    activeColor: selectedColor,
+                                    value: strokeWidth,
+                                    onChanged: (double value) {
+                                      Map map = {
+                                        'value': value,
+                                        'roomName': dataOfRoom['name']
+                                      };
+                                      socket.emit('stroke-width', map);
+                                    })),
+                            IconButton(
+                                onPressed: () {
+                                  socket.emit(
+                                      'clean-screen', dataOfRoom['name']);
+                                },
+                                icon: Icon(
+                                  Icons.layers_clear,
+                                  color: selectedColor,
+                                )),
                           ],
                         ),
-                      );
-                      // return ListTile(
-                      //   title: Text(
-                      //     msg.elementAt(0),
-                      //     style: TextStyle(
-                      //       color: Colors.black,
-                      //       fontSize: 19,
-                      //       fontWeight: FontWeight.bold,
-                      //     ),
-                      //   ),
-                      //   subtitle: Text(
-                      //     msg.elementAt(1),
-                      //     style: TextStyle(
-                      //       color: Colors.grey,
-                      //       fontSize: 16,
-                      //     ),
-                      //   ),
-                      // );
-                    }),
-              ),
-            ],
-          ),
-          dataOfRoom['turn']['nickname'] != widget.data['nickname']
-              ? Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    margin: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-                    child: TextField(
-                      controller: _txtController,
-                      onSubmitted: (value) {
-                        if (value.trim().isNotEmpty) {
-                          Map map = {
-                            'username': widget.data['nickname'],
-                            'msg': value.trim(),
-                            'word': dataOfRoom['word'],
-                            'roomName': widget.data['name'],
-                            'guessedUserCtr': guessedUserCtr,
-                            'totalTime': _totalTime,
-                            'timeTaken': _totalTime - _start,
-                          };
-                          socket.emit('msg', map);
-                          _txtController.clear();
-                        }
-                      },
-                      autocorrect: false,
-                      decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(color: Colors.transparent)),
-                          enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(color: Colors.transparent)),
-                          contentPadding: EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 14),
-                          filled: true,
-                          fillColor: Color(0xFFF5F5FA),
-                          hintText: 'Your guess',
-                          hintStyle: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                          )),
-                      textInputAction: TextInputAction.done,
+                        dataOfRoom['turn']['nickname'] !=
+                                widget.data['nickname']
+                            ? Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: textBlankWidget,
+                              )
+                            : Center(
+                                child: Text(
+                                  dataOfRoom['word'],
+                                  style: TextStyle(fontSize: 26),
+                                ),
+                              ),
+                        //Displaying messages
+                        Container(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 15, vertical: 2),
+                          height: MediaQuery.of(context).size.height * 0.25,
+                          child: ListView.builder(
+                              controller: _scrollController,
+                              shrinkWrap: true,
+                              itemCount: messages.length,
+                              itemBuilder: (context, index) {
+                                var msg = messages[index].values;
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 5),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        msg.elementAt(0) + ": ",
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 19,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        msg.elementAt(1),
+                                        style: TextStyle(
+                                          color: Colors.black54,
+                                          fontSize: 19,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                // return ListTile(
+                                //   title: Text(
+                                //     msg.elementAt(0),
+                                //     style: TextStyle(
+                                //       color: Colors.black,
+                                //       fontSize: 19,
+                                //       fontWeight: FontWeight.bold,
+                                //     ),
+                                //   ),
+                                //   subtitle: Text(
+                                //     msg.elementAt(1),
+                                //     style: TextStyle(
+                                //       color: Colors.grey,
+                                //       fontSize: 16,
+                                //     ),
+                                //   ),
+                                // );
+                              }),
+                        ),
+                      ],
                     ),
-                  ),
+                    dataOfRoom['turn']['nickname'] != widget.data['nickname']
+                        ? Align(
+                            alignment: Alignment.bottomCenter,
+                            child: Container(
+                              margin: EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 5),
+                              child: TextField(
+                                controller: _txtController,
+                                onSubmitted: (value) {
+                                  if (value.trim().isNotEmpty) {
+                                    Map map = {
+                                      'username': widget.data['nickname'],
+                                      'msg': value.trim(),
+                                      'word': dataOfRoom['word'],
+                                      'roomName': widget.data['name'],
+                                      'guessedUserCtr': guessedUserCtr,
+                                      'totalTime': _totalTime,
+                                      'timeTaken': _totalTime - _start,
+                                    };
+                                    socket.emit('msg', map);
+                                    _txtController.clear();
+                                  }
+                                },
+                                autocorrect: false,
+                                decoration: InputDecoration(
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(
+                                            color: Colors.transparent)),
+                                    enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(
+                                            color: Colors.transparent)),
+                                    contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 14),
+                                    filled: true,
+                                    fillColor: Color(0xFFF5F5FA),
+                                    hintText: 'Your guess',
+                                    hintStyle: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                    )),
+                                textInputAction: TextInputAction.done,
+                              ),
+                            ),
+                          )
+                        : Container()
+                  ],
                 )
-              : Container()
-        ],
-      ),
+              : WaitingLobbyScreen(
+                  lobbyName: dataOfRoom['name'],
+                  numberOfPlayers: dataOfRoom['players'].length,
+                  occopancy: dataOfRoom['occupancy'],
+                  players: dataOfRoom['players'],
+                )
+          : Center(child: CircularProgressIndicator()),
     );
   }
 }
