@@ -15,7 +15,7 @@ class PlayerScore extends StatelessWidget {
             return ListTile(
               title: Text(
                 data.elementAt(0),
-                style: TextStyle(color: Colors.black, fontSize: 22),
+                style: TextStyle(color: Colors.white54, fontSize: 22),
               ),
               trailing: Text(
                 data.elementAt(1),

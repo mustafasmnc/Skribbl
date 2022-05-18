@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:skribbl_clone/screens/paint_screen.dart';
+import 'package:skribbl_clone/widgets/custom_button.dart';
 import 'package:skribbl_clone/widgets/custom_text_field.dart';
 import 'package:http/http.dart' as http;
 
@@ -41,7 +42,9 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
       // }
 
       await http
-          .post(Uri.parse('serverlink/api/room/check'),
+          .post(
+              Uri.parse(
+                  'https://flutter-skribbl-clone.herokuapp.com/api/room/check'),
               headers: {"Content-Type": "application/json"},
               body: jsonEncode(<String, String>{
                 'roomName': _roomNameController.text.toString()
@@ -49,8 +52,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
           .then((response) {
         if (response.statusCode == 200) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(
-                  '${_roomNameController.text} is already exist')));
+              content: Text('${_roomNameController.text} is already exist')));
         } else {
           Navigator.of(context).push(MaterialPageRoute(
               builder: (context) =>
@@ -65,22 +67,22 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(
-          color: Colors.black,
+          color: Colors.white,
         ),
-        backgroundColor: Colors.white,
+        //backgroundColor: Colors.white,
         elevation: 0,
       ),
-      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              SizedBox(height: MediaQuery.of(context).size.height * 0.04),
               Text(
                 "Create Room",
                 style: TextStyle(
-                  color: Colors.black,
+                  color: Colors.white54,
                   fontSize: 30,
                 ),
               ),
@@ -101,7 +103,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                   Text(
                     "Select max rounds",
                     style: TextStyle(
-                      color: Colors.black,
+                      color: Colors.white54,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -115,14 +117,14 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                                   value: value,
                                   child: Text(
                                     value,
-                                    style: TextStyle(color: Colors.black),
+                                    style: TextStyle(color: Colors.white54),
                                   ),
                                 ))
                         .toList(),
                     hint: Text(
                       _maxRoundValue!,
                       style: TextStyle(
-                        color: Colors.black,
+                        color: Colors.white54,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -142,7 +144,7 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                   Text(
                     "Select room size",
                     style: TextStyle(
-                      color: Colors.black,
+                      color: Colors.white54,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -156,14 +158,14 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                                   value: value,
                                   child: Text(
                                     value,
-                                    style: TextStyle(color: Colors.black),
+                                    style: TextStyle(color: Colors.white54),
                                   ),
                                 ))
                         .toList(),
                     hint: Text(
                       _roomSizeValue!,
                       style: TextStyle(
-                        color: Colors.black,
+                        color: Colors.white54,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -177,19 +179,24 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                 ],
               ),
               SizedBox(height: 40),
-              ElevatedButton(
-                  onPressed: () => createRoom(),
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(Colors.blue),
-                    textStyle: MaterialStateProperty.all(
-                        TextStyle(color: Colors.white)),
-                    minimumSize: MaterialStateProperty.all(
-                        Size(MediaQuery.of(context).size.width / 2.5, 50)),
-                  ),
-                  child: Text(
-                    "Create",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ))
+              CustomButton(
+                title: "Create",
+                color: Colors.blue,
+                onTap: () => createRoom(),
+              )
+              // ElevatedButton(
+              //     onPressed: () => createRoom(),
+              //     style: ButtonStyle(
+              //       backgroundColor: MaterialStateProperty.all(Colors.blue),
+              //       textStyle: MaterialStateProperty.all(
+              //           TextStyle(color: Colors.white)),
+              //       minimumSize: MaterialStateProperty.all(
+              //           Size(MediaQuery.of(context).size.width / 2.5, 50)),
+              //     ),
+              //     child: Text(
+              //       "Create",
+              //       style: TextStyle(color: Colors.white, fontSize: 16),
+              //     ))
             ],
           ),
         ),
