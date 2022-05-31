@@ -1,4 +1,4 @@
-package com.example.skribbl_clone
+package smnc.doodle
 
 import io.flutter.embedding.android.FlutterActivity
 

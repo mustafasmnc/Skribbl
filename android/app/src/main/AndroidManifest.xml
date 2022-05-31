@@ -1,7 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.skribbl_clone">
+    package="smnc.doodle">
+    <uses-permission android:name="android.permission.INTERNET"/>
    <application
-        android:label="skribbl_clone"
+        android:label="Doodle"
         android:name="${applicationName}"
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">

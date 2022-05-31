@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:skribbl_clone/controller/paint_screen_controller.dart';
 import 'dart:ui' as ui;
 
 import 'package:skribbl_clone/model/touch_points.dart';
 
 class MyCustomPainter extends CustomPainter {
-  List<TouchPoints> pointsList;
+  List<TouchPoints> pointsList = <TouchPoints>[].obs;
   MyCustomPainter({required this.pointsList});
   List<Offset> offsetPoints = [];
 
@@ -22,8 +24,20 @@ class MyCustomPainter extends CustomPainter {
     for (var i = 0; i < pointsList.length - 1; i++) {
       if (pointsList[i] != null && pointsList[i + 1] != null) {
         //this is a line
-        canvas.drawLine(pointsList[i].points, pointsList[i + 1].points,
-            pointsList[i].paint);
+        var x1_1 = pointsList[i].points.dx;
+        var x1_2 = pointsList[i + 1].points.dx;
+        var y1_1 = pointsList[i].points.dy;
+        var y1_2 = pointsList[i + 1].points.dy;
+        //parmağın kaldırılıp uzak bir noktda çizime devam edildiğinde son alan ile yeni başlanılan alan
+        //arasına çizgi çizilmemesi için bu 2 nokta arasında x ve y kordinatları arasında en az 10 pixel 
+        //alan olması gerekiyor
+        if (x1_2 - x1_1 < 10) { 
+          if (y1_2 - y1_1 < 10) {
+            //print(pointsList[i].points.dx);
+            canvas.drawLine(pointsList[i].points, pointsList[i + 1].points,
+                pointsList[i].paint);
+          }
+        }
       } else if (pointsList[i] != null && pointsList[i + 1] == null) {
         //this is a point
         offsetPoints.clear();
