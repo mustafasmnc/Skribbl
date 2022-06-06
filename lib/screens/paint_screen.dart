@@ -6,8 +6,6 @@ import 'package:get/get.dart';
 import 'package:skribbl_clone/controller/paint_screen_controller.dart';
 import 'package:skribbl_clone/model/my_custom_painter.dart';
 import 'package:skribbl_clone/model/touch_points.dart';
-import 'package:skribbl_clone/screens/final_learderboard.dart';
-import 'package:skribbl_clone/screens/home_screen.dart';
 import 'package:skribbl_clone/screens/waiting_lobby_screen.dart';
 import 'package:skribbl_clone/sidebar/player_scoreboard_drawer.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
@@ -63,6 +61,7 @@ class _PaintScreenState extends State<PaintScreen> {
     _timer = Timer.periodic(oneSec, (timer) {
       if (paintScreenController.start.value == 0) {
         socket.emit('change-turn', dataOfRoom['name']);
+        //print('socket:change-turn');
         setState(() {
           timer.cancel();
         });
@@ -289,6 +288,7 @@ class _PaintScreenState extends State<PaintScreen> {
           _timer!.cancel();
           socket.close();
           socket.clearListeners();
+          socket.disconnect();
         });
         paintScreenController.isShowFinalLeaderBoard.value = true;
         Get.offAndToNamed('/final_leaderboard_screen', arguments: [
@@ -299,7 +299,6 @@ class _PaintScreenState extends State<PaintScreen> {
       });
 
       socket.on('start-game', (data) {
-        print('startttt');
         setState(() {});
         paintScreenController.startGame.value = true;
         startTimer();
@@ -442,7 +441,7 @@ class _PaintScreenState extends State<PaintScreen> {
                 margin: EdgeInsets.only(bottom: 30),
                 child: FloatingActionButton(
                     onPressed: () {
-                      print(args[0]['name']);
+                      //print(args[0]['name']);
                       if (args[0]['isPlayerAdmin'] == 'true') {
                         if (dataOfRoom['isJoin'] == true &&
                             dataOfRoom['players'].length > 1) {
@@ -726,7 +725,7 @@ class _PaintScreenState extends State<PaintScreen> {
                                             //print(widget.data['nickname']);
                                             // print(widget.data['name']);
                                             // print( dataOfRoom['word']);
-                                            socket.emit('msg', map);
+                                            socket.emit('server-msg', map);
                                             _txtController.clear();
                                           }
                                         },

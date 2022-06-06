@@ -26,8 +26,8 @@ class FinalLeaderBoard extends StatelessWidget {
                       child: Text(
                         'LEADERBOARD',
                         style: TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Doodle Gum',
+                            fontSize: 18,
                             letterSpacing: 5),
                       ),
                     ),

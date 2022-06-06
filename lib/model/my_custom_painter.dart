@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:skribbl_clone/controller/paint_screen_controller.dart';
 import 'dart:ui' as ui;
 
 import 'package:skribbl_clone/model/touch_points.dart';
@@ -29,9 +28,9 @@ class MyCustomPainter extends CustomPainter {
         var y1_1 = pointsList[i].points.dy;
         var y1_2 = pointsList[i + 1].points.dy;
         //parmağın kaldırılıp uzak bir noktda çizime devam edildiğinde son alan ile yeni başlanılan alan
-        //arasına çizgi çizilmemesi için bu 2 nokta arasında x ve y kordinatları arasında en az 10 pixel 
+        //arasına çizgi çizilmemesi için bu 2 nokta arasında x ve y kordinatları arasında en az 10 pixel
         //alan olması gerekiyor
-        if (x1_2 - x1_1 < 10) { 
+        if (x1_2 - x1_1 < 10) {
           if (y1_2 - y1_1 < 10) {
             //print(pointsList[i].points.dx);
             canvas.drawLine(pointsList[i].points, pointsList[i + 1].points,

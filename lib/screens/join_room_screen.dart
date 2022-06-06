@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:skribbl_clone/screens/paint_screen.dart';
 import 'package:skribbl_clone/widgets/custom_button.dart';
 import 'package:skribbl_clone/widgets/custom_text_field.dart';
 import 'package:http/http.dart' as http;
@@ -101,7 +100,9 @@ class _JoinRoomScreenState extends State<JoinRoomScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        extendBodyBehindAppBar: true,
         appBar: AppBar(
+          backgroundColor: Colors.transparent,
           iconTheme: IconThemeData(
             color: Colors.white,
           ),
