@@ -50,6 +50,9 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
               }))
           .then((response) {
         if (response.statusCode == 200) {
+          setState(() {
+            loading = false;
+          });
           Get.snackbar('Error!', '${_roomNameController.text} is already exist',
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: Colors.redAccent,
@@ -68,6 +71,9 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
         }
       });
     } else {
+      setState(() {
+        loading = false;
+      });
       Get.snackbar('Error!', 'Please fill out all required fields!',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.redAccent,
@@ -97,7 +103,8 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(height: MediaQuery.of(context).size.height * 0.1),
+                      SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.1),
                       Text(
                         "Create Room",
                         style: TextStyle(
@@ -105,7 +112,8 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                           fontSize: 30,
                         ),
                       ),
-                      SizedBox(height: MediaQuery.of(context).size.height * 0.08),
+                      SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.08),
                       CustomTextField(
                         controller: _nameController,
                         hintText: "Enter your name",
@@ -130,7 +138,12 @@ class _CreateRoomScreenState extends State<CreateRoomScreen> {
                           SizedBox(width: 40),
                           DropdownButton<String>(
                             focusColor: Color(0xFFF5F6FA),
-                            items: <String>["Easy", "Medium", "Hard", "Difficult"]
+                            items: <String>[
+                              "Easy",
+                              "Medium",
+                              "Hard",
+                              "Difficult"
+                            ]
                                 .map<DropdownMenuItem<String>>((String value) =>
                                     DropdownMenuItem(
                                       value: value,

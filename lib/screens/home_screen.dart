@@ -12,6 +12,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
+    var height = MediaQuery.of(context).size.height;
     return SafeArea(
       child: Scaffold(
         body: Column(
@@ -38,9 +39,10 @@ class _HomeScreenState extends State<HomeScreen> {
             SizedBox(height: MediaQuery.of(context).size.height * 0.1),
             Text(
               "Create/Join a room to play!",
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 24,
+                fontSize: height > 600 ? 24 : 20,
               ),
             ),
             SizedBox(height: MediaQuery.of(context).size.height * 0.1),

@@ -23,6 +23,7 @@ class WaitingLobbyScreen extends StatefulWidget {
 class _WaitingLobbyScreenState extends State<WaitingLobbyScreen> {
   @override
   Widget build(BuildContext context) {
+    var height = MediaQuery.of(context).size.height;
     return SafeArea(
       child: Scaffold(
         body: Column(
@@ -32,7 +33,9 @@ class _WaitingLobbyScreenState extends State<WaitingLobbyScreen> {
               padding: EdgeInsets.all(8),
               child: Text(
                 'Waiting for ${widget.occopancy - widget.numberOfPlayers} players join',
-                style: TextStyle(fontSize: 26, color: Colors.white54),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: height > 600 ? 26 : 22, color: Colors.white54),
               ),
             ),
             SizedBox(height: MediaQuery.of(context).size.height * 0.03),
@@ -79,7 +82,9 @@ class _WaitingLobbyScreenState extends State<WaitingLobbyScreen> {
                     children: [
                       Text(
                         'Room Name: ' + widget.lobbyName,
-                        style: TextStyle(color: Colors.white54, fontSize: 18),
+                        style: TextStyle(
+                            color: Colors.white54,
+                            fontSize: height > 600 ? 18 : 14),
                       ),
                       Container(
                         width: 70,
@@ -108,7 +113,7 @@ class _WaitingLobbyScreenState extends State<WaitingLobbyScreen> {
                               fillColor: Colors.grey,
                               hintText: 'Copy',
                               hintStyle: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: height > 600 ? 14 : 12,
                                   fontWeight: FontWeight.w400,
                                   color: Colors.black87,
                                   letterSpacing: 1.5)),
@@ -122,7 +127,9 @@ class _WaitingLobbyScreenState extends State<WaitingLobbyScreen> {
             SizedBox(height: MediaQuery.of(context).size.height * 0.1),
             Text('PLAYERS',
                 style: TextStyle(
-                    fontSize: 20, color: Colors.white54, letterSpacing: 2)),
+                    fontSize: height > 600 ? 20 : 16,
+                    color: Colors.white54,
+                    letterSpacing: 2)),
             Expanded(
               child: ListView.builder(
                   primary: true,
@@ -132,12 +139,12 @@ class _WaitingLobbyScreenState extends State<WaitingLobbyScreen> {
                     return ListTile(
                       leading: Text("${index + 1})",
                           style: TextStyle(
-                              fontSize: 24,
+                              fontSize: height > 600 ? 22 : 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.white54)),
                       title: Text(widget.players[index]['nickname'],
                           style: TextStyle(
-                              fontSize: 24,
+                              fontSize: height > 600 ? 22 : 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.white54)),
                     );

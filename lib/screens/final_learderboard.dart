@@ -9,6 +9,7 @@ class FinalLeaderBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var height = MediaQuery.of(context).size.height;
     return SafeArea(
       child: Scaffold(
         body: Center(
@@ -25,9 +26,10 @@ class FinalLeaderBoard extends StatelessWidget {
                     Container(
                       child: Text(
                         'LEADERBOARD',
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                             fontFamily: 'Doodle Gum',
-                            fontSize: 18,
+                            fontSize: height > 600 ? 16 : 10,
                             letterSpacing: 5),
                       ),
                     ),
@@ -61,6 +63,7 @@ class FinalLeaderBoard extends StatelessWidget {
                   args[1] != ""
                       ? "${args[1]} has won the game"
                       : "All players win the game",
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                       color: Colors.white54,
                       fontWeight: FontWeight.bold,
